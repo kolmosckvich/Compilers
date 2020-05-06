@@ -11,7 +11,7 @@ namespace Lab1
 
         public static List<char> operations = new List<char> { '(', ')', '*', '+', '|', '&' };
         public static List<char> brackets = new List<char> { '(', ')' };
-        public static List<int> opPriors = new List<int> { 0, 0, 3, 3, 2, 2 };
+        public static List<int> opPriors = new List<int> { 0, 0, 3, 3, 1, 2 };
 
         public static void ClearNodesID(Node init)
         {
