@@ -27,7 +27,7 @@ namespace Lab1
             getProcessStartInfoQuery = new GetProcessStartInfoQuery();
             registerLayoutPluginCommand = new RegisterLayoutPluginCommand(getProcessStartInfoQuery, getStartProcessQuery);
             wrapper = new GraphGeneration(getStartProcessQuery, getProcessStartInfoQuery, registerLayoutPluginCommand);
-            string regExp = "(0+|1+)|101001";
+            string regExp = "(0|1)+011";
             //string regExp = "(0|1)0*10+(00)";
             string preProcRegExp = RegexpProcessor.PreprocessRegexp(regExp);
             var polska = RegexpProcessor.SortingStation(preProcRegExp);

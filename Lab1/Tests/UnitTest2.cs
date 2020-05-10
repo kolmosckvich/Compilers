@@ -56,7 +56,7 @@ namespace Tests
             string expr = "0|(1|0)10*0";
             string preproc = RegexpProcessor.PreprocessRegexp(expr);
             string polska = new String(RegexpProcessor.SortingStation(preproc).ToArray());
-            Assert.AreEqual("010||1&0*&0&", polska);
+            Assert.AreEqual("010|1&0*&0&|", polska);
         }
     }
 }
