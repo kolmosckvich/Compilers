@@ -154,3 +154,8 @@ $RECYCLE.BIN/
 
 # Mac desktop service store files
 .DS_Store
+Lab2/.vs/Lab1/DesignTimeBuild/.dtbcache
+Lab2/.vs/Lab1/v16/Server/sqlite3/db.lock
+Lab2/.vs/Lab1/v16/Server/sqlite3/storage.ide
+Lab2/.vs/Lab1/v16/TestStore/0/000-0000.testlog
+Lab2/.vs/Lab1/v16/TestStore/0/testlog.manifest
