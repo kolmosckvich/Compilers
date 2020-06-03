@@ -82,7 +82,7 @@ namespace Lab1
                 }
                 else
                 {
-
+					result = false;
                 }
             }
             else
@@ -168,6 +168,10 @@ namespace Lab1
                     {
                         result = false;
                     }
+                }
+				else
+                {
+                    result = false;
                 }
             }
             else
