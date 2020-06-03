@@ -1,0 +1,25 @@
+(+ (first [1 2 3]) 2)
+(def z1z0 2)
+z1z0
+;somethin stupid
+z1z0
+(def + -)
++
+(def mp {:x 1 :y 2})
+(:y mp)
+(:z mp)
+(if false 2 3)
+(if 1.0 \s "stroka")
+(def if (+ 1 2))
+if
+(:j mp "hhhh")
+(def abc (fn [a b] 1e-5 43 (str (+ 1 2)) ) )
+(abc 1 2)
+(def def 1)
+def
+(abc 1 2)
+def
+if
+(:z mp)
+;(def fn (str "sas"))
+;fn
