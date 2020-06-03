@@ -43,6 +43,15 @@ namespace Tests
 
             res = tab.GetRelat(brake, brake) == Relat.None;
             Assert.IsTrue(res);
+
+            res = tab.GetRelat(ter[0], ter[2]) == Relat.None;
+            Assert.IsTrue(res);
+
+            res = tab.GetRelat(opers[0], opers[1]) == Relat.More;
+            Assert.IsTrue(res);
+
+            res = tab.GetRelat(opers[1], opers[3]) == Relat.Lesser;
+            Assert.IsTrue(res);
         }
 
         [TestMethod]
@@ -83,6 +92,10 @@ namespace Tests
 
             input = "(1) & 0 & ~1 ! a & 1 & 0 ! 1 & (1 ! ~0)$";
             output = "10&1~&a1&0&!0~1!1&!";
+            Assert.AreEqual(output, GP.Process(input));
+
+            input = "(1 | 0) & (0 & ~1) | 1$";
+            output = "10|1~0&&1|";
             Assert.AreEqual(output, GP.Process(input));
         }
 
