@@ -4,6 +4,7 @@ using Antlr4.Runtime.Tree;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace Lab1
 {
@@ -193,21 +194,65 @@ namespace Lab1
 
                 var ParentNode = Nodes.Get(context.Parent);
                 var currNode = Nodes.Get(context);
+                var NodesList = context.children.Where(x => Nodes.Get(x) != null).ToList();
 
-                currNode.TextNode = context.GetText();
-                if (ExprSymTypes.Get(context) != SymType.Nil)
+                if (NodesList.Count == 1)
                 {
-                    currNode.MacroType = ExprSymTypes.Get(context).ToString();
+                    if(currNode.TypeNode == "List" || currNode.TypeNode == "Vector" || currNode.TypeNode == "Keyword")
+                    {
+                        currNode.TextNode = context.GetText();
+                        if (ExprSymTypes.Get(context) != SymType.Nil)
+                        {
+                            currNode.MacroType = ExprSymTypes.Get(context).ToString();
+                        }
+
+                        if (ExprSyms.Get(context) != null)
+                        {
+                            currNode.NodeValue = ExprSyms.Get(context).Value;
+                        }
+
+                        currNode.Parent = ParentNode;
+                        foreach(var child in currNode.Childs[0].Childs)
+                        {
+                            child.Parent = currNode;
+                            currNode.Childs.Add(child);
+                        }
+                        currNode.Childs[0].Parent = null;
+                        currNode.Childs.RemoveAt(0);
+                        ParentNode.Childs.Add(currNode);
+                    }
+                    else
+                    {
+                        var oldCurrNode = currNode;
+                        currNode = Nodes.Get(NodesList[0]);
+
+                        Nodes.Put(context, currNode);
+
+                        currNode.Parent = ParentNode;
+                        ParentNode.Childs.Add(currNode);
+                        oldCurrNode.Childs.Remove(currNode);
+                    }
+                    
+                }
+                else
+                {
+                    currNode.TextNode = context.GetText();
+                    if (ExprSymTypes.Get(context) != SymType.Nil)
+                    {
+                        currNode.MacroType = ExprSymTypes.Get(context).ToString();
+                    }
+
+                    if (ExprSyms.Get(context) != null)
+                    {
+                        currNode.NodeValue = ExprSyms.Get(context).Value;
+                    }
+
+                    currNode.Parent = ParentNode;
+                    ParentNode.Childs.Add(currNode);
                 }
 
-                if (ExprSyms.Get(context) != null)
-                {
-                    currNode.NodeValue = ExprSyms.Get(context).Value;
-                }
-
-                currNode.Parent = ParentNode;
-                ParentNode.Childs.Add(currNode);
             }
+
         }
 
         public override void EnterFile([NotNull] ClojureObrParser.FileContext context)
