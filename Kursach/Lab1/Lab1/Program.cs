@@ -6,12 +6,13 @@ using System.Linq;
 using System.Text;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
+using Newtonsoft.Json;
 
 namespace Lab1
 {
     public class Program
     {
-        private static bool R = false;
+        private static bool R = true;
 
         static void Main(string[] args)
         {
@@ -54,6 +55,16 @@ namespace Lab1
                         Console.ReadKey();
                         return;
                     }
+                    var typedRoot = semantic.typedRoot;
+
+                    var options = new JsonSerializerSettings
+                    {
+                        Formatting = Formatting.Indented,
+                        NullValueHandling = NullValueHandling.Ignore
+                    };
+
+                    string typedTree = JsonConvert.SerializeObject(typedRoot, options);
+                    File.WriteAllText("typedTree.json", typedTree);
                     GraphProcessor.BuildGraph(semantic.root, "tree");
                 }
                 

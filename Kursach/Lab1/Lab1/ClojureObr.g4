@@ -52,14 +52,7 @@ number
     | float
     ;
 
-character
-    : char
-    | named_char
-    ;
-
-named_char: CHAR_NAMED ;
-
-char 
+character 
     : CHAR_ANY 
     | CHAR_NAMED
     ;

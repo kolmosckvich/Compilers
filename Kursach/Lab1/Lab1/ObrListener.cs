@@ -18,6 +18,9 @@ namespace Lab1
         public ParseTreeProperty<TreeNode> Nodes = new ParseTreeProperty<TreeNode>();
         public TreeNode root;
 
+        public ParseTreeProperty<BaseNode> TypedNodes = new ParseTreeProperty<BaseNode>();
+        public FileNode typedRoot;
+
         public override void EnterList([NotNull] ClojureObrParser.ListContext context)
         {
             //
@@ -29,23 +32,31 @@ namespace Lab1
                 Console.WriteLine($"Первый элемент - {first.GetText()}");
             }
             */  
+            //
+
+
         }
 
         public override void ExitList([NotNull] ClojureObrParser.ListContext context)
         {
             //
             //Console.WriteLine("Вышел из списка");
+            //
+            var exprs = ((ExpressionsNode)TypedNodes.Get(context.children[1])).expressions;
+            ListNode node = new ListNode(exprs);
+            TypedNodes.Put(context, node);
         }
 
         public override void EnterDefine([NotNull] ClojureObrParser.DefineContext context)
         {
             //
             //Console.WriteLine("Вошел в define");
-            Console.WriteLine("Вышел из define");
+            //Console.WriteLine("Вышел из define");
             var sym = context.children[2];
             var expr = context.children[3];
             currentSymbolTable.AddSymbol(sym.GetText(), expr.GetText(), SymType.Fun);
-            Console.WriteLine($"Определяемый символ - {sym.GetText()}");
+            //Console.WriteLine($"Определяемый символ - {sym.GetText()}");
+            //
         }
 
         public override void ExitDefine([NotNull] ClojureObrParser.DefineContext context)
@@ -63,14 +74,20 @@ namespace Lab1
             {
                 var symbol = ExprSyms.Get(expr);
                 currentSymbolTable.AddSymbol(sym.GetText(), symbol.Value, SymType.Fun);
-                Console.WriteLine($"Значение выражения - {symbol.Value}");
+                //Console.WriteLine($"Значение выражения - {symbol.Value}");
             }
             else
             {
                 currentSymbolTable.AddSymbol(sym.GetText(), expr.GetText(), SymType.Fun);
-                Console.WriteLine($"Значение выражения - {expr.GetText()}");
+                //Console.WriteLine($"Значение выражения - {expr.GetText()}");
             }
-            Console.WriteLine("Вышел из define");
+            //Console.WriteLine("Вышел из define");
+            //
+
+            var symNode = (SymNode)TypedNodes.Get(sym);
+            var exprNode = (ExprNode)TypedNodes.Get(expr);
+            var node = new DefNode(symNode, exprNode);
+            TypedNodes.Put(context, node);
         }
 
         public override void EnterSymbol([NotNull] ClojureObrParser.SymbolContext context)
@@ -88,6 +105,7 @@ namespace Lab1
             {
                 throw new Exception($"Symbol does not defined, {context.Start.Line}: {context.Start.Column}");
             }
+            //
         }
 
         public override void ExitSymbol([NotNull] ClojureObrParser.SymbolContext context)
@@ -95,13 +113,19 @@ namespace Lab1
             //
             //Console.WriteLine("Вышел из символа");
             string symbText = context.GetText();
+            Symbol symb = null;
             if(ExprSymTypes.Get(context.Parent) != SymType.Key 
                 && ExprSymTypes.Get(context.Parent) != SymType.Fun)
             {
-                Symbol symb = currentSymbolTable.Symbols[symbText];
+                symb = currentSymbolTable.Symbols[symbText];
                 ExprSymTypes.Put(context, SymType.Sym);
                 ExprSyms.Put(context, symb);
             }
+            //
+            
+            SymNode node = new SymNode(symbText, symb?.Value);
+            TypedNodes.Put(context, node);
+            
         }
 
         public override void EnterLiteral([NotNull] ClojureObrParser.LiteralContext context)
@@ -112,23 +136,32 @@ namespace Lab1
         public override void ExitLiteral([NotNull] ClojureObrParser.LiteralContext context)
         {
             //
+            Symbol symb = null;
             if (context.children.Count == 1 && ExprSymTypes.Get(context.children[0]) == SymType.Sym)
             {
                 ExprSymTypes.Put(context, SymType.Sym);
-                Symbol symb = ExprSyms.Get(context.children[0]);
+                symb = ExprSyms.Get(context.children[0]);
                 ExprSyms.Put(context, symb);
             }
+            //
+            var text = context.GetText();
+            var node = TypedNodes.Get(context.children[0]);
+
+            TypedNodes.Put(context, node);
         }
 
         public override void EnterKeyword([NotNull] ClojureObrParser.KeywordContext context)
         {
             //
             ExprSymTypes.Put(context, SymType.Key);
+            //
         }
 
         public override void ExitKeyword([NotNull] ClojureObrParser.KeywordContext context)
         {
             //
+            KeyWordNode node = new KeyWordNode(context.GetText());
+            TypedNodes.Put(context, node);
         }
 
         public override void EnterExpr([NotNull] ClojureObrParser.ExprContext context)
@@ -145,6 +178,7 @@ namespace Lab1
                 Console.WriteLine($"----|{symName} -- {symVal}");
             }
             */
+            //
         }
 
         public override void ExitExpr([NotNull] ClojureObrParser.ExprContext context)
@@ -158,6 +192,50 @@ namespace Lab1
                 Symbol symb = ExprSyms.Get(context.children[0]);
                 ExprSyms.Put(context, symb);
             }
+            //
+            ExprNode node = new ExprNode();
+
+            foreach (var child in context.children)
+            {
+                var childNode = TypedNodes.Get(child);
+                if(childNode != null)
+                {
+                    switch(childNode.type)
+                    {
+                        case NodeType.Def:
+                            node = (ExprNode)childNode;
+                            break;
+                        case NodeType.Cond:
+                            node = (ExprNode)childNode;
+                            break;
+                        case NodeType.Fun:
+                            node = (ExprNode)childNode;
+                            break;
+                        case NodeType.List:
+                            node = (ExprNode)childNode;
+                            break;
+                        case NodeType.Vector:
+                            node = (ExprNode)childNode;
+                            break;
+                        case NodeType.Map:
+                            node = (ExprNode)childNode;
+                            break;
+                        case NodeType.Val:
+                            node = (ExprNode)childNode;
+                            break;
+                        case NodeType.Sym:
+                            node = (ExprNode)childNode;
+                            break;
+                        case NodeType.KeyWord:
+                            node = (ExprNode)childNode;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            TypedNodes.Put(context, node);
         }
 
         public override void EnterFun([NotNull] ClojureObrParser.FunContext context)
@@ -169,6 +247,20 @@ namespace Lab1
         public override void ExitFun([NotNull] ClojureObrParser.FunContext context)
         {
             //
+            int childsCount = context.children.Count;
+            List<SymNode> paramNodes = new List<SymNode>();
+
+            for(int i = 3; i < childsCount - 3; i++)
+            {
+                paramNodes.Add((SymNode)TypedNodes.Get(context.children[i]));
+            }
+            var exprNodes = (ExpressionsNode)TypedNodes.Get(context.children[childsCount - 2]);
+            int exprCount = exprNodes.expressions.Count;
+            var lastExpr = exprNodes.expressions[exprCount - 1];
+            var exprMid = exprNodes.expressions.SkipLast(1).ToList();
+
+            FunNode node = new FunNode(paramNodes, lastExpr, exprMid);
+            TypedNodes.Put(context, node);
         }
 
 
@@ -184,6 +276,7 @@ namespace Lab1
             node.TypeNode = name;
 
             Nodes.Put(context, node);
+            //
         }
 
         public override void ExitEveryRule([NotNull] ParserRuleContext context)
@@ -252,7 +345,7 @@ namespace Lab1
                 }
 
             }
-
+            //
         }
 
         public override void EnterFile([NotNull] ClojureObrParser.FileContext context)
@@ -260,6 +353,7 @@ namespace Lab1
             //
             root = new TreeNode();
             Nodes.Put(context, root);
+            //
         }
 
         public override void ExitFile([NotNull] ClojureObrParser.FileContext context)
@@ -271,6 +365,19 @@ namespace Lab1
 
             root.TypeNode = name;
             root.TextNode = "File";
+            //
+
+            var list = new List<ExprNode>();
+            foreach (var child in context.children)
+            {
+                var node = TypedNodes.Get(child);
+                if (node != null)
+                {
+                    var exprNode = (ExprNode)node;
+                    list.Add(exprNode);
+                }
+            }
+            typedRoot = new FileNode(list);
         }
 
         public override void EnterCondition([NotNull] ClojureObrParser.ConditionContext context)
@@ -281,6 +388,13 @@ namespace Lab1
         public override void ExitCondition([NotNull] ClojureObrParser.ConditionContext context)
         {
             //
+            ExprNode condExpr = (ExprNode)TypedNodes.Get(context.children[2]);
+            ExprNode thenExpr = (ExprNode)TypedNodes.Get(context.children[3]);
+            ExprNode elseExpr = null;
+            if (context.children.Count > 5)
+                elseExpr = (ExprNode)TypedNodes.Get(context.children[4]);
+            CondNode node = new CondNode(condExpr, thenExpr, elseExpr);
+            TypedNodes.Put(context, node);
         }
 
         public override void EnterExpressions([NotNull] ClojureObrParser.ExpressionsContext context)
@@ -291,6 +405,13 @@ namespace Lab1
         public override void ExitExpressions([NotNull] ClojureObrParser.ExpressionsContext context)
         {
             //
+            List<ExprNode> nodes = new List<ExprNode>();
+            foreach(var child in context.children)
+            {
+                nodes.Add((ExprNode)TypedNodes.Get(child));
+            }
+            ExpressionsNode node = new ExpressionsNode(nodes);
+            TypedNodes.Put(context, node);
         }
 
         public override void EnterVector([NotNull] ClojureObrParser.VectorContext context)
@@ -301,6 +422,9 @@ namespace Lab1
         public override void ExitVector([NotNull] ClojureObrParser.VectorContext context)
         {
             //
+            var exprs = ((ExpressionsNode)TypedNodes.Get(context.children[1])).expressions;
+            VectorNode node = new VectorNode(exprs);
+            TypedNodes.Put(context, node);
         }
 
         public override void EnterMap([NotNull] ClojureObrParser.MapContext context)
@@ -311,6 +435,16 @@ namespace Lab1
         public override void ExitMap([NotNull] ClojureObrParser.MapContext context)
         {
             //
+            int count = context.children.Count;
+            var pairs = new List<KeyValuePairNode>();
+            for (int i = 1; i < count -1; i+=2)
+            {
+                KeyWordNode key = (KeyWordNode)TypedNodes.Get(context.children[i]);
+                ExprNode val = (ExprNode)TypedNodes.Get(context.children[i+1]);
+                pairs.Add(new KeyValuePairNode(key, val));
+            }
+            MapNode node = new MapNode(pairs);
+            TypedNodes.Put(context, node);
         }
 
         public override void EnterBool([NotNull] ClojureObrParser.BoolContext context)
@@ -321,26 +455,8 @@ namespace Lab1
         public override void ExitBool([NotNull] ClojureObrParser.BoolContext context)
         {
             //
-        }
-
-        public override void EnterChar([NotNull] ClojureObrParser.CharContext context)
-        {
-            //
-        }
-
-        public override void ExitChar([NotNull] ClojureObrParser.CharContext context)
-        {
-            //
-        }
-
-        public override void EnterNamed_char([NotNull] ClojureObrParser.Named_charContext context)
-        {
-            //
-        }
-
-        public override void ExitNamed_char([NotNull] ClojureObrParser.Named_charContext context)
-        {
-            //
+            LitNode node = new LitNode(SymType.Bool, context.GetText());
+            TypedNodes.Put(context, node);
         }
 
         public override void EnterCharacter([NotNull] ClojureObrParser.CharacterContext context)
@@ -351,6 +467,8 @@ namespace Lab1
         public override void ExitCharacter([NotNull] ClojureObrParser.CharacterContext context)
         {
             //
+            LitNode node = new LitNode(SymType.Char, context.GetText());
+            TypedNodes.Put(context, node);
         }
 
         public override void EnterFloat([NotNull] ClojureObrParser.FloatContext context)
@@ -361,6 +479,8 @@ namespace Lab1
         public override void ExitFloat([NotNull] ClojureObrParser.FloatContext context)
         {
             //
+            LitNode node = new LitNode(SymType.Float, context.GetText());
+            TypedNodes.Put(context, node);
         }
 
         public override void EnterInt([NotNull] ClojureObrParser.IntContext context)
@@ -371,6 +491,8 @@ namespace Lab1
         public override void ExitInt([NotNull] ClojureObrParser.IntContext context)
         {
             //
+            LitNode node = new LitNode(SymType.Int, context.GetText());
+            TypedNodes.Put(context, node);
         }
 
         public override void EnterNil([NotNull] ClojureObrParser.NilContext context)
@@ -381,6 +503,8 @@ namespace Lab1
         public override void ExitNil([NotNull] ClojureObrParser.NilContext context)
         {
             //
+            LitNode node = new LitNode(SymType.Nil, context.GetText());
+            TypedNodes.Put(context, node);
         }
 
         public override void EnterNumber([NotNull] ClojureObrParser.NumberContext context)
@@ -391,6 +515,8 @@ namespace Lab1
         public override void ExitNumber([NotNull] ClojureObrParser.NumberContext context)
         {
             //
+            var node = TypedNodes.Get(context.children[0]);
+            TypedNodes.Put(context, node);
         }
 
         public override void EnterString([NotNull] ClojureObrParser.StringContext context)
@@ -401,6 +527,8 @@ namespace Lab1
         public override void ExitString([NotNull] ClojureObrParser.StringContext context)
         {
             //
+            LitNode node = new LitNode(SymType.Str, context.GetText());
+            TypedNodes.Put(context, node);
         }
     }
 

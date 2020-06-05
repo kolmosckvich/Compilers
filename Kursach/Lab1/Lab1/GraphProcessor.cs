@@ -22,7 +22,7 @@ namespace Lab1
             GraphGeneration wrapper = new GraphGeneration(getStartProcessQuery, getProcessStartInfoQuery, registerLayoutPluginCommand);
 
             var graphStr = BuildGraphString(root);
-            Console.WriteLine(graphStr);
+            //Console.WriteLine(graphStr);
             byte[] output = wrapper.GenerateGraph(graphStr, Enums.GraphReturnType.Png);
             File.WriteAllText($"{filename}.txt", graphStr);
             using (Image image = Image.FromStream(new MemoryStream(output)))
