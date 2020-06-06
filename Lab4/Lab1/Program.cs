@@ -29,7 +29,14 @@ namespace Lab1
             tab.PrintTable();
             //string input = "(1) & 0 & ~1 ! a & 1 $";
             //string input = "(1) & 0 & ~1 ! a & 1 & 0 ! 1 & (1 ! ~0)$";
-            string input = "~1 & ~0$";
+            //string input = "~1 & ~0$";
+            string input = "[1 | 0] & (1 | [~a | 0]) & ~[0 | (1 & 0)]$";
+            //string input = "(1 | 0) & (1 | (~a | 0)) & ~(0 | (1 & 0))$";
+            //string input = "a & a & ~(0 | (1 & 0))$";
+            //string input = "a & ~[0 | (1 & 0)]$";
+            //string input = "1 & a & 0$";
+            //string input = "~(a | 0) & (~1 | (0))$";
+            Console.WriteLine(input);
             GrammProcessor GP = new GrammProcessor(operations, terms, brackets, brake, tab);
 
             string res = GP.Process(input);
@@ -58,6 +65,8 @@ namespace Lab1
 
             bracks.Add(new Element("("));
             bracks.Add(new Element(")"));
+            bracks.Add(new Element("["));
+            bracks.Add(new Element("]"));
 
             return bracks;
         }

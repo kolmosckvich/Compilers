@@ -74,6 +74,8 @@ namespace Tests
 
             bracks.Add(new Element("("));
             bracks.Add(new Element(")"));
+            bracks.Add(new Element("["));
+            bracks.Add(new Element("]"));
 
 
             Element brake = new Element("$");
@@ -96,6 +98,19 @@ namespace Tests
 
             input = "(1 | 0) & (0 & ~1) | 1$";
             output = "10|1~0&&1|";
+            Assert.AreEqual(output, GP.Process(input));
+
+            input = "[1 | 0] & (1 | [~a | 0]) & ~[0 | (1 & 0)]$";
+            output = "10|a~0|1|&10&0|~&";
+            Assert.AreEqual(output, GP.Process(input));
+            
+
+            input = "a & a & ~(0 | (1 & 0))$";
+            output = "aa&10&0|~&";
+            Assert.AreEqual(output, GP.Process(input));
+
+            input = "~(a | 0) & (~1 | (0))$";
+            output = "a0|~1~0|&";
             Assert.AreEqual(output, GP.Process(input));
         }
 

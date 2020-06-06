@@ -49,15 +49,15 @@ namespace Lab1
         {
             string postfix = "";
             Stack<Element> stack = new Stack<Element>();
-            Stack<string> vars = new Stack<string>();
             stack.Push(brake);
 
             int curr = 0;
 
             while (elems[curr] != brake || !IsStackFin(stack))
             {
+                /*
                 if (isTerm(elems[curr]))
-                    vars.Push(elems[curr].Name);
+                    vars.Push(elems[curr].Name);*/
 
                 string firstSElem = FirstNSElem(stack).Name;
                 string currElem = elems[curr].Name;
@@ -81,19 +81,21 @@ namespace Lab1
                         {
                             if (isTerm(stackCut[0]))
                             {
-                                stack.Pop();
-                                stack.Push(start);
+                                var t = stack.Pop();
+                                stack.Push(new Element(start.Name, t.Name));
 
                                 flag = false;
                             }
                         }
                         else if(stackCut.Count == 2)
                         {
-                            if(isUnar(stackCut[1]) && stackCut[0] == start)
+                            if(isUnar(stackCut[1]) && stackCut[0].Name == start.Name)
                             {
                                 string postfixAdd = stackCut[1].Name;
-                                postfixAdd = vars.Pop() + postfixAdd;
+                                if(stackCut[0].varVal != "")
+                                    postfixAdd = stackCut[0].varVal + postfixAdd;
 
+                                Console.Write(postfixAdd);
                                 postfix += postfixAdd;
 
                                 stack.Pop(); stack.Pop();
@@ -104,28 +106,33 @@ namespace Lab1
                         }
                         else if (stackCut.Count == 3)
                         {
-                            if (stackCut[0].Name == ")" && stackCut[1] == start && stackCut[2].Name == "(")
+                            if (stackCut[0].Name == ")" && stackCut[1].Name == start.Name && stackCut[2].Name == "(")
                             {
                                 stack.Pop(); stack.Pop(); stack.Pop();
-                                stack.Push(start);
+                                stack.Push(new Element(stackCut[1].Name, stackCut[1].varVal));
 
                                 flag = false;
                             }
-                            else if (stackCut[0] == start && isOperation(stackCut[1]) && stackCut[2] == start)
+                            else if(stackCut[0].Name == "]" && stackCut[1].Name == start.Name && stackCut[2].Name == "[")
+                            {
+                                stack.Pop(); stack.Pop(); stack.Pop();
+                                stack.Push(new Element(stackCut[1].Name, stackCut[1].varVal));
+
+                                flag = false;
+                            }
+                            else if (stackCut[0].Name == start.Name && isOperation(stackCut[1]) && stackCut[2].Name == start.Name)
                             {
                                 Oper curOp = (Oper)stackCut[1];
                                 string postfixAdd = curOp.Name;
                                 var fir = stack.Pop();
                                 var sec = stack.Pop();
                                 var thi = stack.Pop();
-                                if (vars.Count != 0)
-                                {
-                                    if (postfix == "" || (isOperation(stack.Peek()) && ((Oper)stack.Peek()).Prior < curOp.Prior && vars.Count > 1))
-                                        postfixAdd = vars.Pop() + postfixAdd;
-                                    postfixAdd = vars.Pop() + postfixAdd;
-                                }
-                                
+                                if (stackCut[0].varVal != "")
+                                    postfixAdd = stackCut[0].varVal + postfixAdd;
+                                if (stackCut[2].varVal != "")
+                                    postfixAdd = stackCut[2].varVal + postfixAdd;
 
+                                Console.Write(postfixAdd);
                                 postfix += postfixAdd;
 
                                 stack.Push(start);
@@ -147,14 +154,14 @@ namespace Lab1
                     return null;
                 }
             }
-
+            Console.WriteLine();
             return postfix;
         }
 
         private bool IsStackFin(Stack<Element> stack)
         {
             if (stack.Count == 2)
-                if (stack.ElementAt(0) == start && stack.ElementAt(1) == brake)
+                if (stack.ElementAt(0).Name == start.Name && stack.ElementAt(1) == brake)
                     return true;
 
             return false;
@@ -179,6 +186,16 @@ namespace Lab1
             return brackets.Contains(e);
         }
 
+        private bool isLeftBracket(Element e)
+        {
+            return e.Name == "(" || e.Name == "[";
+        }
+
+        private bool isRightBracket(Element e)
+        {
+            return e.Name == ")" || e.Name == "]";
+        }
+
         private bool isTerm(Element e)
         {
             return terms.Contains(e);
@@ -187,7 +204,7 @@ namespace Lab1
         private Element FirstNSElem (Stack<Element> stack)
         {
             for (int i = 0; i < stack.Count; i++)
-                if (stack.ElementAt(i) != start)
+                if (stack.ElementAt(i).Name != start.Name)
                     return stack.ElementAt(i);
 
             return null;

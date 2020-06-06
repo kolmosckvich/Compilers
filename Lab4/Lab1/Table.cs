@@ -55,32 +55,39 @@ namespace Lab1
                             else
                                 relations[i][j] = Relat.None;
                         }
-                        else if (isTerm(secEl) || secEl.Name == "(")
+                        else if (isTerm(secEl) || isLeftBracket(secEl))
                             relations[i][j] = Relat.Lesser;
-                        else if (secEl.Name == ")" || secEl == brake)
+                        else if (isRightBracket(secEl) || secEl == brake)
                             relations[i][j] = Relat.More;
                         else
                             relations[i][j] = Relat.None;
                     }
                     else if (isTerm(firEl))
-                        if (isOperation(secEl) || secEl.Name == ")" || secEl == brake)
+                        if (isOperation(secEl) || isRightBracket(secEl) || secEl == brake)
                             relations[i][j] = Relat.More;
                         else
                             relations[i][j] = Relat.None;
                     else if (firEl.Name == "(")
-                        if (isOperation(secEl) || secEl.Name == "(" || isTerm(secEl))
+                        if (isOperation(secEl) || secEl.Name == "(" || isTerm(secEl) || secEl.Name == "[")
                             relations[i][j] = Relat.Lesser;
                         else if (secEl.Name == ")")
                             relations[i][j] = Relat.Equal;
                         else
                             relations[i][j] = Relat.None;
-                    else if (firEl.Name == ")")
-                        if (isOperation(secEl) || secEl.Name == ")" || secEl == brake)
+                    else if (firEl.Name == "[")
+                        if (isOperation(secEl) || secEl.Name == "(" || isTerm(secEl) || secEl.Name == "[")
+                            relations[i][j] = Relat.Lesser;
+                        else if (secEl.Name == "]")
+                            relations[i][j] = Relat.Equal;
+                        else
+                            relations[i][j] = Relat.None;
+                    else if (isRightBracket(firEl))
+                        if (isOperation(secEl) || secEl.Name == ")" || secEl == brake || secEl.Name == "]")
                             relations[i][j] = Relat.More;
                         else
                             relations[i][j] = Relat.None;
                     else if (firEl == brake)
-                        if (isOperation(secEl) || secEl.Name == "(" || isTerm(secEl))
+                        if (isOperation(secEl) || isLeftBracket(secEl) || isTerm(secEl))
                             relations[i][j] = Relat.Lesser;
                         else
                             relations[i][j] = Relat.None;
@@ -177,6 +184,16 @@ namespace Lab1
         private bool isBracket(Element e)
         {
             return brackets.Contains(e);
+        }
+
+        private bool isLeftBracket(Element e)
+        {
+            return e.Name == "(" || e.Name == "[";
+        }
+
+        private bool isRightBracket(Element e)
+        {
+            return e.Name == ")" || e.Name == "]";
         }
 
         private bool isTerm(Element e)
